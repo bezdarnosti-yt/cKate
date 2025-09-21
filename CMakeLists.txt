@@ -14,9 +14,6 @@ CPMAddPackage(
     NAME imgui
     GITHUB_REPOSITORY ocornut/imgui
     GIT_TAG docking
-    OPTIONS
-        "IMGUI_BUILD_EXAMPLES OFF"
-        "IMGUI_BUILD_TESTING OFF"
 )
 
 CPMAddPackage(
@@ -29,10 +26,25 @@ CPMAddPackage(
         "GLFW_BUILD_DOCS OFF"
 )
 
-add_executable(engine main.cpp)
+CPMAddPackage(
+    NAME spdlog
+    GITHUB_REPOSITORY gabime/spdlog
+    GIT_TAG v1.x
+)
 
-# Setting ImGui with backends
-if(imgui_ADDED AND glfw_ADDED) 
+add_library(glad STATIC
+    libs/glad/src/glad.c
+)
+
+target_include_directories(glad PUBLIC
+    libs/glad/include
+)
+
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+)
+
+if(imgui_ADDED AND glfw_ADDED AND spdlog_ADDED) 
     target_sources(${PROJECT_NAME} PRIVATE
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
@@ -40,14 +52,26 @@ if(imgui_ADDED AND glfw_ADDED)
         ${imgui_SOURCE_DIR}/imgui_tables.cpp
         ${imgui_SOURCE_DIR}/imgui_widgets.cpp
         ${imgui_SOURCE_DIR}/imgui.cpp
+        ${spdlog_SOURCE_DIR}/src
+        libs/glad/src/glad.c
     )
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${imgui_SOURCE_DIR}
         ${imgui_SOURCE_DIR}/backends
+        ${spdlog_SOURCE_DIR}/include
+        libs/glad/include
+        include
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
+        glad
     )
+    if(APPLE)
+        target_link_libraries(${PROJECT_NAME} PRIVATE "-framework OpenGL")
+    else()
+        find_package(OpenGL REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+    endif()
 endif()
 
 include(CTest)
