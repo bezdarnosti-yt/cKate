@@ -1,0 +1,4 @@
+.vscode/
+cmake/
+out/
+CMakePresets.json
