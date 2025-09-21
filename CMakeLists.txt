@@ -11,12 +11,6 @@ file(DOWNLOAD https://github.com/cpm-cmake/CPM.cmake/releases/latest/download/CP
 include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
 
 CPMAddPackage(
-    NAME imgui
-    GITHUB_REPOSITORY ocornut/imgui
-    GIT_TAG docking
-)
-
-CPMAddPackage(
     NAME glfw
     GITHUB_REPOSITORY glfw/glfw
     GIT_TAG 3.4
@@ -32,6 +26,18 @@ CPMAddPackage(
     GIT_TAG v1.x
 )
 
+CPMAddPackage(
+    NAME glm
+    GITHUB_REPOSITORY g-truc/glm
+    GIT_TAG 1.0.1
+)
+
+CPMAddPackage(
+    NAME stb
+    GITHUB_REPOSITORY nothings/stb
+    GIT_TAG master
+)
+
 add_library(glad STATIC
     libs/glad/src/glad.c
 )
@@ -41,31 +47,26 @@ target_include_directories(glad PUBLIC
 )
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
-file(GLOB_RECURSE HEADERS "include/*.h")
+file(GLOB_RECURSE HEADERS "src/*.h")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-if(imgui_ADDED AND glfw_ADDED AND spdlog_ADDED) 
+if(glfw_ADDED AND spdlog_ADDED AND glm_ADDED AND stb_ADDED) 
     target_sources(${PROJECT_NAME} PRIVATE
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-        ${imgui_SOURCE_DIR}/imgui_draw.cpp
-        ${imgui_SOURCE_DIR}/imgui_tables.cpp
-        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-        ${imgui_SOURCE_DIR}/imgui.cpp
         ${spdlog_SOURCE_DIR}/src
+        ${stb_SOURCE_DIR}
         libs/glad/src/glad.c
     )
     target_include_directories(${PROJECT_NAME} PRIVATE
-        ${imgui_SOURCE_DIR}
-        ${imgui_SOURCE_DIR}/backends
         ${spdlog_SOURCE_DIR}/include
+        ${stb_SOURCE_DIR}
         libs/glad/include
         include
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
         glad
+        glm::glm
     )
     if(APPLE)
         target_link_libraries(${PROJECT_NAME} PRIVATE "-framework OpenGL")
