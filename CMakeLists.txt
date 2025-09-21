@@ -40,9 +40,10 @@ target_include_directories(glad PUBLIC
     libs/glad/include
 )
 
-add_executable(${PROJECT_NAME}
-    src/main.cpp
-)
+file(GLOB_RECURSE SOURCES "src/*.cpp")
+file(GLOB_RECURSE HEADERS "include/*.h")
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 if(imgui_ADDED AND glfw_ADDED AND spdlog_ADDED) 
     target_sources(${PROJECT_NAME} PRIVATE
